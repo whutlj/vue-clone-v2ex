@@ -3,14 +3,21 @@ import Router from 'vue-router'
 
 
 Vue.use(Router)
-import HelloWorld from '@/components/HelloWorld'
-import UserLogin from '@/components/UserLogin'
-import Index from '@/components/Index'
-import Detail from '@/components/Detail'
-import Member from '@/components/Member'
-import Nodes from '@/components/Nodes'
-import Swiper from '@/components/MySwiper' 
+// import HelloWorld from '@/components/HelloWorld'
+// import UserLogin from '@/components/UserLogin'
+// import Index from '@/components/Index'
+// import Detail from '@/components/Detail'
+// import Member from '@/components/Member'
+// import Nodes from '@/components/Nodes'
+// import Swiper from '@/components/MySwiper' 
 import config from '../public/config'
+const HelloWorld = () => { return import(/* webpackChunkName: "group-foo" */ '@/components/HelloWorld')}
+const UserLogin = () => {return import(/* webpackChunkName: "group-foo" */'@/components/UserLogin')}
+const Index = () => {return import(/* webpackChunkName: "group-foo" */'@/components/Index')}
+const Detail = () => {return import(/* webpackChunkName: "group-foo" */'@/components/Detail')}
+const Member = () => {return import(/* webpackChunkName: "group-foo" */'@/components/Member')}
+const Nodes = () => {return import(/* webpackChunkName: "group-foo" */'@/components/Nodes')}
+const Swiper = () => {return import(/* webpackChunkName: "group-foo" */'@/components/MySwiper')}
 var router =  new Router({
   mode:'history',
   base:'/app/',

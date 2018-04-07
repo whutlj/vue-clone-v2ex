@@ -9,6 +9,7 @@
           <li><router-link :to = "{name: 'index',query:{tab:home}}" replace>首页</router-link></li>
           <li><router-link :to = "{name: 'userlogin'}" replace>登录</router-link></li>
           <li><router-link :to="{name:'swiper'}" replace>注册</router-link></li>
+          <button type="button" @click="getCount">计数结果</button>
         </ul>
       </div>
       
@@ -31,7 +32,7 @@
               <span class = "grey">V2EX 是一个关于分享和探索的地方</span>
             </div>
             <div class="panel-body">
-              <router-link :to = "{name:'swiper'}"><button class="registBtn btn btn-default">现在注册</button></router-link replace>
+              <router-link :to = "{name:'swiper'}" target="_blank"><button class="registBtn btn btn-default">现在注册</button></router-link replace>
               <p class="mt_10">已注册用户请 <router-link :to="{name: 'userlogin'}" replace>登录</router-link></p>
             </div>
         </div>
@@ -47,10 +48,13 @@
 
 <script>
 // export default {} 经过vue-loader后返回组件对象
-import HotTopic from './HotTopic'
-import Status from './Status'
-import PhoneNav from './phoneNav'
-import PhoneLeft from './PhoneLeft'
+// import HotTopic from './HotTopic'
+// import Status from './Status'
+// import PhoneNav from './phoneNav'
+// import PhoneLeft from './PhoneLeft'
+import {person}  from '@/assets/js/constants.js'
+//
+import message from '@/assets/message.js'
 export default {
   name: 'app',
   data: function(){
@@ -60,7 +64,10 @@ export default {
     }
   },
   components: {
-    HotTopic,Status,PhoneNav,PhoneLeft
+    HotTopic: () => import('./HotTopic'),
+    Status: () => {return import('./Status')},
+    PhoneNav: () => import('./phoneNav'),
+    PhoneLeft: () => import('./PhoneLeft')
   },
   mounted(){
     window.onresize = function(){
@@ -71,12 +78,19 @@ export default {
         // console.log(userAgent)
       }
     };
-    this.$nextTick(function(){
-      // console.log("change")
-      // store.commit('increment');
-    });
+    this.bindMessage()
   },
   methods:{
+    getCount () {
+      console.log(person.count)
+    },
+    bindMessage () {
+      message.$on('onComponentMessage', data =>{
+        console.log(`这里收到了消息 :${data.param}`)
+        window.alert('123')
+
+      })
+    },
     add(){
       jQuery.noConflict();
       this.$http.get('/api/topics/hot.json').then(function(response){

@@ -1,0 +1,60 @@
+<template>
+  <div class="lj-waterfall-slot">
+    <slot></slot>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'WaterfallSlot',
+  props: {
+    width: {
+      required: true,
+      validator: (val) => val >= 0 
+    },
+    height: {
+      required: true,
+      validator: (val) => val >= 0
+    },
+    order: {
+      default: 0
+    }
+  },
+  data: ()=> ({
+    isShow: false
+  }),
+  created () {
+    this.rect = {
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 0
+    }
+
+    this.$watch(()=> (this.width, this.height), ()=> {
+      this.notify()
+    })
+
+  },
+  mounted () {
+    this.$parent.$once('reflowed', () => {
+      this.isShow = true
+    })
+    this.notify()
+  },
+  beforeDestroy () {
+    this.notify()
+  },
+  methods: {
+    notify () {
+      this.$parent.$emit('reflow', this)
+    },
+    getMetas () {
+      return {
+        vm: this,
+        node: this.$el
+      }
+    }
+  }
+}
+</script>
