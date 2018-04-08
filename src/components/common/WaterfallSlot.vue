@@ -53,7 +53,9 @@ export default {
       return {
         vm: this,
         node: this.$el,
-        order: this.order
+        order: this.order,
+        width: this.width,
+        height: this.height
       }
     }
   }

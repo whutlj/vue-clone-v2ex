@@ -125,13 +125,40 @@ function getTransitionEndEvent () {
     processor.calculate(vm, metas, rects, options)
   }
 
+  function getOptions (vm) {
+    const maxLineGap = vm.maxLineGap ? +vm.maxLineGap : +vm.lineGap
+    const minLinGap = vm.minLinGap ? +vm.minLinGap : +lineGap
+    return {
+      lineGap: +vm.lineGap,
+      maxLineGap: maxLineGap,
+      minLinGap: minLinGap,
+      align: ~['left', 'center', 'right'].indexOf(vm.align) ? vm.align : 'left'
+      fixHeight: !!vm.fixHeight,
+      grow: vm.grow && vm.grow.map((val)=> val)
+    }
+  }
+
   const verticalProcessor = (() => {
     // 这是为了计算每个slot的宽高
     function calculate(vm, metas, rects, options) {
       let width = vm.$el.clientWidth
       let grow = options.grow
       let strategy = grow ? getRowStrategyWithGrow (width, grow) : gtRowStrategy (width, options)
-
+      // 宽度和列数确定后，确定位置,tops位每一列的高度存放
+      let tops = getArrayFillWith(0, strategy.count)
+      // 对每一个meta进行位置设置
+      metas.map((meta, index) => {
+        //找到tops中位置最低的一个,last为上计算后的值，最小位置,找到到最小的位置 
+        let offset = tops.reduce((last, cur, i) => cur < tops[last] ? i : last, 0)
+        let width = strategy.width[offset % strategy.count]
+        let rect = rects[index]
+        rect.top = top[offset]
+        rect.left = strategy.left + (offset ? offset *  : 0)
+        rect.width = width
+        rect.height = meta.height * (options.fixHeight ? 1 : width / meta.width)
+        tops[offset] += rect.height
+      })
+      vm.$el.style.height = Math.max(tops) + 'px'
     }
 
     function getRowStrategy (width, options) {
@@ -149,21 +176,27 @@ function getTransitionEndEvent () {
           count = Math.round(count)
           slotWidth = width / count
         } else if (canFit) {
-          count = 
-          slotWidth = 
+          count = ~~count
+          slotWidth = width / count
         } else if (canFitGreedy) {
-          slotWidth = 
-          count = 
+          count = ~~(count + 1)
+          slotWidth = width / count 
+        } else {
+          count = ~~count
+          slotWidth = options.maxLineGap
         }
-      
+        
+        if (count === 1) {
+          slotWidth = Math.min(width, options.singleMaxWidth)
+          slotWidth = Math.max(slotWidth,options.minLinGap)
+        }
       }
 
-      
 
       return {
-        width: ,
-        count: ,
-        left: 
+        width: getArrayFillWith(slotWidth, width),
+        count: count,
+        left: getLeft(width, slotWidth * count, options.align)
       }
     }
 
@@ -175,7 +208,7 @@ function getTransitionEndEvent () {
         left: 0
       }
     }
-
+    
     function getRowStrategy (width, options) {
 
     }
@@ -188,19 +221,29 @@ function getTransitionEndEvent () {
     console.log('水平')
   })()
 
-
-
-  function getOptions (vm) {
-    const maxLineGap = vm.maxLineGap ? +vm.maxLineGap : +vm.lineGap
-    const minLinGap = vm.minLinGap ? +vm.minLinGap : +lineGap
-    return {
-      lineGap: +vm.lineGap,
-      maxLineGap: maxLineGap,
-      minLinGap: minLinGap,
-      align: ~['left', 'center', 'right'].indexOf(vm.align) ? vm.align : 'left'
-      fixHeight: !!vm.fixHeight,
-      grow: vm.grow && vm.grow.map((val)=> val)
+  function getLeft (width, contentWidth, align) {
+    // let res = 0
+    // if (align === 'left') {
+    //   res = 0
+    // } else if (align === 'center') {
+    //   res = (width - contentWidth) / 2
+    // } else {
+    //   res = width - contentWidth
+    // }
+    // return res
+    switch(align) {
+      case 'right': return width - contentWidth
+      case 'center': return (width - contentWidth) / 2
+      default: return 0
     }
+  }
+  function getArrayFillWith (item, count) {
+    let getter = (typeof item === 'function') ? () => item() : () => item
+    let arr = []
+    for (let i = 0; i < count; i++) {
+      arr[i] = getter()
+    }
+    return arr
   }
 
 
