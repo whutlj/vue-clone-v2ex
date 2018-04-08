@@ -49,10 +49,11 @@ export default {
     notify () {
       this.$parent.$emit('reflow', this)
     },
-    getMetas () {
+    getMeta () {
       return {
         vm: this,
-        node: this.$el
+        node: this.$el,
+        order: this.order
       }
     }
   }
