@@ -41,7 +41,7 @@ export default {
 
   },
   mounted () {
-    // console.log('子组件挂载' + this.order)
+    console.log('子组件挂载' + this.order)
     this.$parent.$once('reflowed', () => {
       this.isShow = true
     })
