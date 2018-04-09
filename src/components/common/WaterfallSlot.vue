@@ -3,7 +3,9 @@
     <slot></slot>
   </div>
 </template>
-
+<style>
+  .lj-waterfall-slot {position: absolute;}
+</style>
 <script>
 export default {
   name: 'WaterfallSlot',
@@ -24,6 +26,8 @@ export default {
     isShow: false
   }),
   created () {
+    // created还没有$el
+    // console.log('子组件created')
     this.rect = {
       top: 0,
       left: 0,
@@ -37,6 +41,7 @@ export default {
 
   },
   mounted () {
+    // console.log('子组件挂载' + this.order)
     this.$parent.$once('reflowed', () => {
       this.isShow = true
     })
@@ -48,6 +53,7 @@ export default {
   methods: {
     notify () {
       this.$parent.$emit('reflow', this)
+      console.log('子组件触发')
     },
     getMeta () {
       return {

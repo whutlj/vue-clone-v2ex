@@ -3,18 +3,20 @@
     <slot></slot>
   </div>
 </template>
-
+<style>
+  .lj-waterfll{position: relative;overflow: hidden;}
+</style>
 <script>
 export default {
   name: 'Waterfall',
-  prpos: {
+  props: {
     autoResize: {
       default: true
     },
     interval: {
       default: 200,
       validator: (val) => val >= 0
-    }
+    },
     align: {
       default: 'left',
       validator: (val) => ~['left', 'center', 'right'].indexOf(val)
@@ -30,7 +32,7 @@ export default {
     maxLineGap: {
       validator: (val) => val >= 0
     },
-    minLinGap: {
+    minLineGap: {
       validator: (val) => val >= 0
     },
     singleMaxWidth: {
@@ -47,6 +49,7 @@ export default {
     token: null
   }),
   created () {
+    console.log('父组件created')
     // 多个数据变化执行统一函数，用函数检测
     this.virtualRects = []
     this.$watch(() => (
@@ -54,7 +57,7 @@ export default {
       this.line,
       this.align,
       this.maxLineGap,
-      this.minLinGap,
+      this.minLineGap,
       this.singleMaxWidth,
       this.fixHeight,
       this.grow
@@ -64,6 +67,7 @@ export default {
     })
   },
   mounted () {
+    console.log('父组件挂载')
     this.$watch("autoResize", this.autoResizeHandler)
     on(this.$el, getTransitionEndEvent(), tidyUpAnimations, true)
     this.autoResizeHandler(this.autoResize)
@@ -104,7 +108,7 @@ function getTransitionEndEvent () {
 
   function reflowHandler () {
     clearTimeout(this.token)
-    setTimeout(this.reflow, this.interval)
+    this.token = setTimeout(this.reflow, this.interval)
   }
 
   function reflow () {
@@ -112,11 +116,23 @@ function getTransitionEndEvent () {
     if (!this.$el) return
     let width = this.$el.clientWidth
     // $children 并不能保证顺序，所以需要根据根据传入的order确定位置
-    let metas = this.$children.map((slot) => child.getMeta())
+    let metas = this.$children.map((slot) => slot.getMeta())
     // 从小到大进行排序
     metas.sort((a, b) => (a.order - b.order))
     this.virtualRects = metas.map(() => ({}))
-    calculate(this, metas, this.virtualRects)
+    // 已已经计算好大小位置，等待赋值
+    // 当前所有事件(同步事件和消息队列中的任务执行完毕，再下一轮事件循环开始时执行)
+    setTimeout(() => {
+      // 箭头函数已经绑定this，不用再换指向，如果不是箭头函数，执行时this将指向window
+      let curWidth = this.$el.width
+      if (curWidth !== width) {
+        calculate(this, metas, this.virtualRects)
+      }
+      // 给dom元素设置属性
+      applyRect(metas, this.virtualRects)
+      // 触发渲染完毕的事件，显示slot
+      this.$emit('reflowed')
+    }, 0)
   }
 
   function calculate (vm, metas, rects) {
@@ -127,14 +143,15 @@ function getTransitionEndEvent () {
 
   function getOptions (vm) {
     const maxLineGap = vm.maxLineGap ? +vm.maxLineGap : +vm.lineGap
-    const minLinGap = vm.minLinGap ? +vm.minLinGap : +lineGap
+    const minLineGap = vm.minLineGap ? +vm.minLineGap : +vm.lineGap
     return {
       lineGap: +vm.lineGap,
       maxLineGap: maxLineGap,
-      minLinGap: minLinGap,
-      align: ~['left', 'center', 'right'].indexOf(vm.align) ? vm.align : 'left'
+      minLineGap: minLineGap,
+      align: ~['left', 'center', 'right'].indexOf(vm.align) ? vm.align : 'left',
       fixHeight: !!vm.fixHeight,
-      grow: vm.grow && vm.grow.map((val)=> val)
+      grow: vm.grow && vm.grow.map((val)=> val),
+      singleMaxWidth: Math.max(vm.singleMaxWidth || 0, maxLineGap)
     }
   }
 
@@ -143,7 +160,7 @@ function getTransitionEndEvent () {
     function calculate(vm, metas, rects, options) {
       let width = vm.$el.clientWidth
       let grow = options.grow
-      let strategy = grow ? getRowStrategyWithGrow (width, grow) : gtRowStrategy (width, options)
+      let strategy = grow ? getRowStrategyWithGrow (width, grow) : getRowStrategy (width, options)
       // 宽度和列数确定后，确定位置,tops位每一列的高度存放
       let tops = getArrayFillWith(0, strategy.count)
       // 对每一个meta进行位置设置
@@ -152,26 +169,28 @@ function getTransitionEndEvent () {
         let offset = tops.reduce((last, cur, i) => cur < tops[last] ? i : last, 0)
         let width = strategy.width[offset % strategy.count]
         let rect = rects[index]
-        rect.top = top[offset]
-        rect.left = strategy.left + (offset ? offset *  : 0)
+        rect.top = tops[offset]
+        rect.left = strategy.left + (offset ? sum(strategy.width.slice(0, offset)) : 0)
         rect.width = width
         rect.height = meta.height * (options.fixHeight ? 1 : width / meta.width)
-        tops[offset] += rect.height
+        tops[offset] = tops[offset] + rect.height
       })
-      vm.$el.style.height = Math.max(tops) + 'px'
+      vm.$el.style.height = Math.max.apply(Math, tops) + 'px'
     }
 
     function getRowStrategy (width, options) {
       let count = width / options.lineGap // 带有小数的个数
       let slotWidth
-      if (lineGap >= width) {
+      if (options.singleMaxWidth >= width) {
         count = 1
-        slotWidth = width
+        slotWidth = Math.max(width, options.minLineGap)
       } else {
         let maxContentWidth = options.maxLineGap * ~~count 
-        let minContentGreedyWidth = options.minLinGap * ~~(count + 1)
+        let minContentGreedyWidth = options.minLineGap * ~~(count + 1)
         let canFit = maxContentWidth >= width
         let canFitGreedy = minContentGreedyWidth <= width
+        console.log('canFit:' + canFit)
+      console.log('canFitGreedy:' + canFitGreedy)
         if (canFit && canFitGreedy) {
           count = Math.round(count)
           slotWidth = width / count
@@ -188,7 +207,7 @@ function getTransitionEndEvent () {
         
         if (count === 1) {
           slotWidth = Math.min(width, options.singleMaxWidth)
-          slotWidth = Math.max(slotWidth,options.minLinGap)
+          slotWidth = Math.max(slotWidth,options.minLineGap)
         }
       }
 
@@ -203,34 +222,38 @@ function getTransitionEndEvent () {
     function getRowStrategyWithGrow (width, grow) {
       let total = sum(grow)
       return {
-        width: grow.map((cur) => width * cur / total)
+        width: grow.map((cur) => width * cur / total),
         count: grow.length,
         left: 0
       }
     }
-    
-    function getRowStrategy (width, options) {
 
+    return {
+      calculate: calculate
+    }
+  })()
+
+ function applyRect (metas, rects) {
+    metas.forEach((meta, index) => {
+      metas[index].vm.rect = rects[index]
+      let style = meta.node.style
+      let rect = rects[index]
+      for(let prop in rect) {
+        style[prop] = rect[prop] + 'px'
+      }
+    })
+ }
+
+  const horizontalProcessor = (()=> {
+    function calculate () {
+      console.log('水平')
     }
     return {
       calculate: calculate
     }
   })()
 
-  const horizontalProcessor = (()=> {
-    console.log('水平')
-  })()
-
   function getLeft (width, contentWidth, align) {
-    // let res = 0
-    // if (align === 'left') {
-    //   res = 0
-    // } else if (align === 'center') {
-    //   res = (width - contentWidth) / 2
-    // } else {
-    //   res = width - contentWidth
-    // }
-    // return res
     switch(align) {
       case 'right': return width - contentWidth
       case 'center': return (width - contentWidth) / 2

@@ -82,7 +82,7 @@ export default {
   },
   methods:{
     getCount () {
-      console.log(person.count)
+      window.open(this.$router.resolve({name: 'LjWaterfall'}).href)
     },
     bindMessage () {
       message.$on('onComponentMessage', data =>{

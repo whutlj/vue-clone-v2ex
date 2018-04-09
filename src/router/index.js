@@ -18,6 +18,7 @@ const Detail = () => {return import(/* webpackChunkName: "group-foo" */'@/compon
 const Member = () => {return import(/* webpackChunkName: "group-foo" */'@/components/Member')}
 const Nodes = () => {return import(/* webpackChunkName: "group-foo" */'@/components/Nodes')}
 const Swiper = () => {return import(/* webpackChunkName: "group-foo" */'@/components/MySwiper')}
+const TestWaterfall = () => import('@/components/TestWaterfall')
 var router =  new Router({
   mode:'history',
   base:'/app/',
@@ -30,7 +31,8 @@ var router =  new Router({
         console.log('enter login');
         next();
       }
-    },{
+    },
+    {
         path:'/',
         name: 'index',
         component: Index
@@ -57,6 +59,11 @@ var router =  new Router({
       meta:{
         auth: config.auth
       }
+    },
+    {
+      path: '/lj_waterfall',
+      name: 'LjWaterfall',
+      component: TestWaterfall
     }
   ],
   // scrollBehavior(to,from,savedPosition){
