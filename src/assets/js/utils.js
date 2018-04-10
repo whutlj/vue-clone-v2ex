@@ -42,19 +42,19 @@ const ItemFactory = (() => {
     if (count <= 0) return arr
     for (let i = 0; i < count; i++) {
       let id = lastIndex ++
-      let height =50 + Math.floor(Math.random() * 250)
+      let height = 50 + Math.floor(Math.random() * 50)
+      let width = 50 + Math.floor(Math.random() * 50)
       let background = getRandomColor()
       let item = {
         id: id,
         height: height,
+        width: width,
         background: background 
       }
       arr.push(item)
     }
     return arr
   }
-
-
   return {
     generateItem: generateItem,
   }

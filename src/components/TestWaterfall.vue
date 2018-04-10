@@ -46,7 +46,6 @@ export default {
     WaterfallSlot
   },
   mounted () {
-
     on(window, 'scroll', this.scrollAddItem, false)
   },
   beforeDestroy () {
@@ -58,8 +57,13 @@ export default {
     },
     scrollAddItem() {
       let scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+      // console.log('window innerHeight: ' + window.innerHeight)
+      // console.log('document Element clientHeight: ' + document.documentElement.clientHeight)
+      // console.log('document body clientHeight: ' + document.body.clientHeight)
       if(scrollTop + window.innerHeight >= document.body.clientHeight) {
-        this.list.push.apply(this.list, ItemFactory.generateItem(20))
+        let arr = this.list
+        arr.push.apply(arr, ItemFactory.generateItem(20))
+        this.list = arr
       }
     }
   }
