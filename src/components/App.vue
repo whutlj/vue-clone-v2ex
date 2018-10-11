@@ -1,5 +1,6 @@
 <template>
   <div id="app" class="row">
+    <div class="example">example</div>
     <div class="container">
       <div class="navbar navbar-default t-left hidden-xs">
         <router-link class="head-title" :to="{name:'index'}">
@@ -33,7 +34,8 @@
             </div>
             <div class="panel-body">
               <router-link :to = "{name:'swiper'}" target="_blank"><button class="registBtn btn btn-default">现在注册</button></router-link replace>
-              <p class="mt_10">已注册用户请 <router-link :to="{name: 'userlogin'}" replace>登录</router-link></p>
+             <!-- <button class="registBtn btn btn-default" @click="clip" v-clip="copyText" v-clip.success="copySuccess" v-clip.fail="copyFail">现在注册</button> -->
+              <p class="mt_10" @click="changeCopyText">已注册用户请 <router-link :to="{name: 'userlogin'}" replace>登录</router-link></p>
             </div>
         </div>
           <div class="sep20"></div>
@@ -53,14 +55,15 @@
 // import PhoneNav from './phoneNav'
 // import PhoneLeft from './PhoneLeft'
 import {person}  from '@/assets/js/constants.js'
-//
+import clipboard from '@/components/directives/clipboard/index.js';
 import message from '@/assets/message.js'
 export default {
   name: 'app',
   data: function(){
     return{
       home:"all",
-      isPhone: false
+      isPhone: false,
+      copyText: '1311321'
     }
   },
   components: {
@@ -68,6 +71,9 @@ export default {
     Status: () => {return import('./Status')},
     PhoneNav: () => import('./phoneNav'),
     PhoneLeft: () => import('./PhoneLeft')
+  },
+  directives: {
+    clip: clipboard
   },
   mounted(){
     window.onresize = function(){
@@ -81,6 +87,24 @@ export default {
     this.bindMessage()
   },
   methods:{
+    clip () {
+      // this.$ljCopy('自定义的Vue-clipboard').then(res => {
+      //   console.log('复制成功');
+      //   console.log(res.text);
+      // }).catch(res => {
+      //   console.log(res);
+      //   console.log('复制失败');
+      // });
+    },
+    copySuccess () {
+      console.log('检测复制成功');
+    },
+    copyFail () {
+      console.log('检测复制失败');
+    },
+    changeCopyText () {
+      this.copyText = Math.random();
+    },
     getCount () {
       window.open(this.$router.resolve({name: 'LjWaterfall'}).href)
     },
@@ -137,13 +161,17 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  .example{
+    font-size: 28px;
+    color:#ff6200;
+  }
 }
 [v-cloak]{
   display: none;

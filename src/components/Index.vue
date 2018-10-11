@@ -15,7 +15,7 @@
                     暂无数据
                 </div>
                 <div class="{'hidden':hidderTopic}">
-                    <div class="cell item" v-for = "topic in topics">
+                    <div class="cell item" v-for = "(topic, index) in topics" :key="index">
                         <table class="table">
                             <tr>
                                 <td class="item img">

@@ -1,4 +1,4 @@
-# vue-router-test
+# vue克隆v2ex,适配手机与pc
 
 > this is join vue-router
 
