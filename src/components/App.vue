@@ -1,5 +1,6 @@
 <template>
   <div id="app" class="row">
+    <svg-icon className="svg-sprite" icon-class="search"></svg-icon>
     <div class="example">example</div>
     <div class="container">
       <div class="navbar navbar-default t-left hidden-xs">
@@ -162,6 +163,11 @@ export default {
 </script>
 
 <style lang="scss">
+.svg-sprite {
+  width: 50px;
+  height: 50px;
+  fill: #ff7800;
+}
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

@@ -11,6 +11,8 @@ import store from './store';
 import 'bootstrap/css/bootstrap.min.css';
 import 'bootstrap/js/bootstrap.min.js';
 import lj from '@/components/plugin/plugin';
+
+import './icons';
 // import LjClipboard from '@/components/plugin/lj-clipboard';
 Vue.config.productionTip = false;
 Vue.use(VueResource);
